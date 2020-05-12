@@ -174,11 +174,6 @@ public static void addEffect(ItemStack i, Player p, String loc){
 			
 			for(int in=0; in<efflist.size(); in++){
 				String str=efflist.get(in).toLowerCase();
-				boolean ig=false;
-				List<String> iglist=new ArrayList<String>(conf.getConfigurationSection(eff+".List."+efflist.get(in)).getKeys(false));
-				if(iglist.contains("LevelInGame")){
-					ig=conf.getBoolean(eff+".List."+efflist.get(in)+".LevelInGame");
-					}
 				int lo=conf.getInt(eff+".List."+efflist.get(in)+".Level");
 				boolean oh=true;boolean ar=true;boolean mh=true;;
 				while(str.endsWith(" ")){
@@ -203,14 +198,6 @@ public static void addEffect(ItemStack i, Player p, String loc){
 					if(oh){if(loc.equals("oh")){nailedit=true;}}
 					if(mh){if(loc.equals("mh")){nailedit=true;}}
 					if(nailedit){
-						if(ig){
-							String Lore2=Lore.substring(Lore.indexOf(str)+str.length());
-							Scanner scan=new Scanner(Lore2);
-							if(scan.hasNextInt()){
-								lo=scan.nextInt();
-							}
-							scan.close();
-						}
 						String E2=eff;
 						if(eff.equalsIgnoreCase("Instant_Health")){
 							E2="HEAL";
