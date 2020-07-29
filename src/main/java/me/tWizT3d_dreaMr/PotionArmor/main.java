@@ -23,6 +23,7 @@ public void onEnable() {
 
 	plugin=this;
 	Bukkit.getPluginManager().registerEvents(new ArmorThings(), this);
+			
 }
 public void onDisable() {
 	for(Player p:Bukkit.getOnlinePlayers())
@@ -50,6 +51,8 @@ private void CreateConfig() {
 	}
 	getConfig().set("Trail.MyFirstTrail*.Enable", true);
 	getConfig().set("Trail.MyFirstTrail*.ID", 1);
+	getConfig().set("Trail.MyFirstTrail*.Weight", 1);
+	getConfig().set("Trail.MyFirstTrail*.Mode", 0);
 	
 	saveConfig();
 	config=getConfig();
