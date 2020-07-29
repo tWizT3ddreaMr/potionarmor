@@ -28,11 +28,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.mineacademy.chatcontrol</groupId>
-            <artifactId>ChatControl</artifactId>
+            <groupId>me.kvq.supertrailspro</groupId>
+            <artifactId>SuperTrailsPro</artifactId>
             <scope>system</scope>
             <version>any</version>
-            <systemPath>C:/Users/Kevin/eclipse-workspace/Dependencies/SuperTrailsPro.jar</systemPath>
+            <systemPath>C:/workspace/Dependencies/SuperTrailsPro.jar</systemPath>
         </dependency>
     </dependencies>
 
