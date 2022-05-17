@@ -1,6 +1,4 @@
 name: PotionArmour
 author: tWizT3d_dreaMr
-version: 2.1.0
-main: me.tWizT3d_dreaMr.PotionArmor.main
-api-version: 1.15
-depend: [ SuperTrailsPro ]
+version: 1.0.4
+main: me.tWizT3d_dreaMr.PotionArmour.main
