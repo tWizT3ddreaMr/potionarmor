@@ -1,4 +1,13 @@
 name: PotionArmour
 author: tWizT3d_dreaMr
-version: 1.0.4
+version: 1.0.5
 main: me.tWizT3d_dreaMr.PotionArmour.main
+commands:
+   Pareset:
+      description: Reset players effects.
+      usage: pareset <player>
+permissions:
+  Potionarmor.pareset:
+    default: op
+    description: Allows the player to Pareset.
+api-version: 1.18

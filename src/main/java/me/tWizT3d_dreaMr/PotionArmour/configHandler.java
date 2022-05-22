@@ -10,8 +10,10 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 public class configHandler {
-public static FileConfiguration config;
-public static File Config;
+	public static FileConfiguration config;
+	public static File Config;
+	public static FileConfiguration mconfig;
+	public static File mConfig;
 public static void enable(){
 if(!(new File("plugins/PotionArmour/UserData/Players.yml").exists())){
 	try {
@@ -29,7 +31,29 @@ try {
 	// TODO Auto-generated catch block
 	e.printStackTrace();
 }
+try {
+	new File("plugins/PotionArmour/config.yml").createNewFile();
+} catch (IOException e) {
+	// TODO Auto-generated catch block
+	e.printStackTrace();
+}
+mConfig =new File("plugins/PotionArmour/config.yml");
+mconfig= YamlConfiguration.loadConfiguration(mConfig);
+try {
+mconfig.save(mConfig);
+} catch (IOException e) {
+// TODO Auto-generated catch block
+e.printStackTrace();
+}
 	
+}
+public static void savemConfig() {
+	try {
+		mconfig.save(mConfig);
+		} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+		}
 }
 public static void addEffect(Player player, String effect){
 if(!has(player)){

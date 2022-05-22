@@ -5,15 +5,16 @@ import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -25,59 +26,14 @@ public class DoingThingsinHere implements Listener {
 public static World world;
 
 public static Plugin plugin= me.tWizT3d_dreaMr.PotionArmour.main.plugin;
-public static FileConfiguration conf= plugin.getConfig();
 
 public boolean isbanner(Material m){
-	if(m==Material.BLACK_BANNER){
-		return true;
-	}else if(m==Material.BLUE_BANNER){
-		return true;
-	}else
-		if(m==Material.BROWN_BANNER){
-	return true;
-    }else
-		if(m==Material.CYAN_BANNER){
-	return true;
-    }else
-		if(m==Material.GRAY_BANNER){
-	return true;
-    }else
-		if(m==Material.GREEN_BANNER){
-	return true;
-    }else
-		if(m==Material.LIGHT_BLUE_BANNER){
-	return true;
-    }else
-		if(m==Material.LIME_BANNER){
-	return true;
-    }else
-		if(m==Material.MAGENTA_BANNER){
-	return true;
-    }else
-		if(m==Material.ORANGE_BANNER){
-	return true;
-    }else
-		if(m==Material.PINK_BANNER){
-	return true;
-    }else
-		if(m==Material.PURPLE_BANNER){
-	return true;
-    }else
-		if(m==Material.RED_BANNER){
-	return true;
-    }else
-		if(m==Material.WHITE_BANNER){
-	return true;
-    }else
-		if(m==Material.YELLOW_BANNER){
-	return true;
-    }else
-	return false;
+	return m.toString().endsWith("BANNER");
 }
 //banner
 @EventHandler
 public void craft(CraftItemEvent e){
-	if(conf.getBoolean("BannerBlock")) return;
+	if(configHandler.mconfig.getBoolean("BannerBlock")) return;
 	ItemStack i=e.getCurrentItem();
 	if(isbanner(i.getType())){
 		if(i.hasItemMeta()){
@@ -93,51 +49,72 @@ public void craft(CraftItemEvent e){
 
 @EventHandler
 public void Armor(PlayerArmorChangeEvent e) {
-	
-	Player p=(Player) e.getPlayer();
-	addEffect(e.getNewItem(),p);
-	RemoveEffect(p);
+	new BukkitRunnable() {
+	     @Override
+	     public void run() {
+	    	Player p=(Player) e.getPlayer();
+	    	addEffect(e.getNewItem(),p);
+	    	RemoveEffect(p);
+	     }
+	};
 	
 }
+//inventory click
 @EventHandler
 public void invClick(InventoryClickEvent e) {
 	if(!(e.getSlot()== e.getWhoClicked().getInventory().getHeldItemSlot()||e.getSlot()==45)) return;
 	Player p=(Player)e.getWhoClicked();
+	PlayerInventory inv=p.getInventory();
+	hand(p,inv.getItemInMainHand(),inv.getItemInOffHand());
+
+	
+}
+//hotbar
+@EventHandler
+public void heldItem(PlayerItemHeldEvent e) {
+	PlayerInventory inv=e.getPlayer().getInventory();
+	hand(e.getPlayer(),inv.getItemInMainHand(),inv.getItemInOffHand());
+}
+//drop
+@EventHandler
+public void drop(PlayerDropItemEvent e) {
+	PlayerInventory inv=e.getPlayer().getInventory();
+	hand(e.getPlayer(),inv.getItemInMainHand(),inv.getItemInOffHand());
+}
+
+@EventHandler
+public void gamemode(PlayerGameModeChangeEvent e) {
+	resetPlayer(e.getPlayer());
+}
+
+public static void resetPlayer(Player p) {
+	PlayerInventory inv=p.getInventory();
 	new BukkitRunnable() {
 	     @Override
 	     public void run() {
-	          //methods
+	    	 p.getActivePotionEffects().clear();
 	    	 RemoveEffect(p);
-	    	 addEffect(p.getInventory().getItemInMainHand(),p);
-	    	 addEffect(p.getInventory().getItemInOffHand(),p);
-	    		
+	    	 for(ItemStack is: inv.getArmorContents())
+	    		 addEffect(is, p);
+	    	 addEffect(inv.getItemInMainHand(), p);
+	    	 addEffect(inv.getItemInOffHand(), p);
 	     }
 	};
 
 	
 }
-@EventHandler
-public void hand(PlayerItemHeldEvent e) {
+public void hand(Player p, ItemStack mainHand, ItemStack offHand) {
 	new BukkitRunnable() {
 	     @Override
 	     public void run() {
-	          //methods
-	    	 RemoveEffect(e.getPlayer());
-	    	 addEffect(e.getPlayer().getInventory().getItemInMainHand(),e.getPlayer());
-	    	 addEffect(e.getPlayer().getInventory().getItemInOffHand(),e.getPlayer());
-	    		
+	    	 RemoveEffect(p);
+	    	 addEffect(mainHand, p);
+	    	 addEffect(offHand, p);
 	     }
 	};
 
 
 	}
-@EventHandler
-public void drop(PlayerDropItemEvent e) {
-	RemoveEffect(e.getPlayer());
-	addEffect(e.getPlayer().getInventory().getItemInMainHand(),e.getPlayer());
-	addEffect(e.getPlayer().getInventory().getItemInOffHand(),e.getPlayer());
-}
-
 public static void addEffect(ItemStack i, Player p){
 	
 if(i==null) return;
@@ -147,11 +124,11 @@ if(!i.getItemMeta().hasLore()) return;
 String Lore=ChatColor.stripColor(i.getItemMeta().getLore().toString());
 for(String eff : me.tWizT3d_dreaMr.PotionArmour.main.Effect){
 	if(me.tWizT3d_dreaMr.PotionArmour.main.config.getBoolean(eff+".Enable")){
-		List<String> efflist=new ArrayList<String>(conf.getConfigurationSection(eff+".List").getKeys(false));
+		List<String> efflist=new ArrayList<String>(configHandler.mconfig.getConfigurationSection(eff+".List").getKeys(false));
 			
 		for(int in=0; in<efflist.size(); in++){
 			String str=efflist.get(in).toLowerCase();
-			int lo=conf.getInt(eff+".List."+efflist.get(in)+".Level");
+			int lo=configHandler.mconfig.getInt(eff+".List."+efflist.get(in)+".Level");
 			while(str.endsWith(" ")){
 				str=str.substring(0, str.length()-1);
 			}
@@ -171,7 +148,7 @@ for(String eff : me.tWizT3d_dreaMr.PotionArmour.main.Effect){
 public static void RemoveEffect(Player p){
 	for(String eff : me.tWizT3d_dreaMr.PotionArmour.main.Effect){
 		if(me.tWizT3d_dreaMr.PotionArmour.configHandler.hasEffect(p, eff)){
-			List<String> efflist=new ArrayList<String>(conf.getConfigurationSection(eff+".List").getKeys(false));
+			List<String> efflist=new ArrayList<String>(configHandler.mconfig.getConfigurationSection(eff+".List").getKeys(false));
 			boolean loseeff=true;
 			for(ItemStack i : p.getInventory().getArmorContents()) {
 				if(i==null) continue;
