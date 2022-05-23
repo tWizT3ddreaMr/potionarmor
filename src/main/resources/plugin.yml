@@ -1,6 +1,6 @@
-name: PotionArmour
+name: ${project.artifactId}
 author: tWizT3d_dreaMr
-version: 1.0.5
+version: ${project.version}
 main: me.tWizT3d_dreaMr.PotionArmour.main
 commands:
    Pareset:

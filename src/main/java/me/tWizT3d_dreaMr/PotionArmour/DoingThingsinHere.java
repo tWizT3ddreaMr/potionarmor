@@ -50,11 +50,12 @@ public void craft(CraftItemEvent e){
 
 @EventHandler
 public void Armor(PlayerArmorChangeEvent e) {
+	final ItemStack i= e.getNewItem();
+	final Player p=(Player) e.getPlayer();
+    
 	Bukkit.getServer().getScheduler().runTask(plugin, new Runnable() {
-    @Override
     public void run() {
-        Player p=(Player) e.getPlayer();
-	    addEffect(e.getNewItem(),p);
+	    addEffect(i,p);
 	    RemoveEffect(p);
 	     }
     
@@ -66,12 +67,11 @@ public void Armor(PlayerArmorChangeEvent e) {
 //inventory click
 @EventHandler
 public void invClick(InventoryClickEvent e) {
+	if(!(e.getSlot()== e.getWhoClicked().getInventory().getHeldItemSlot()||e.getSlot()==45)) return;
+	final Player p=(Player)e.getWhoClicked();
+	final PlayerInventory inv=p.getInventory();
 	Bukkit.getServer().getScheduler().runTask(plugin, new Runnable() {
-	    @Override
-	    public void run() {
-			if(!(e.getSlot()== e.getWhoClicked().getInventory().getHeldItemSlot()||e.getSlot()==45)) return;
-			Player p=(Player)e.getWhoClicked();
-			PlayerInventory inv=p.getInventory();
+		public void run() {
 			hand(p,inv.getItemInMainHand(),inv.getItemInOffHand());
 		}
 	});
@@ -79,22 +79,23 @@ public void invClick(InventoryClickEvent e) {
 //hotbar
 @EventHandler
 public void heldItem(PlayerItemHeldEvent e) {
+	final PlayerInventory inv=e.getPlayer().getInventory();
+	final Player p = e.getPlayer();
 	Bukkit.getServer().getScheduler().runTask(plugin, new Runnable() {
-	    @Override
+    	
 	    public void run() {
-	    	PlayerInventory inv=e.getPlayer().getInventory();
-			hand(e.getPlayer(),inv.getItemInMainHand(),inv.getItemInOffHand());
+			hand(p, inv.getItemInMainHand(),inv.getItemInOffHand());
 		}
 	});
 }
 //drop
 @EventHandler
 public void drop(PlayerDropItemEvent e) {
+	final Player p= e.getPlayer();
+	final PlayerInventory inv=p.getInventory();
 	Bukkit.getServer().getScheduler().runTask(plugin, new Runnable() {
-	    @Override
 	    public void run() {
-			PlayerInventory inv=e.getPlayer().getInventory();
-			hand(e.getPlayer(),inv.getItemInMainHand(),inv.getItemInOffHand());
+			hand(p,inv.getItemInMainHand(),inv.getItemInOffHand());
 	    }
 	});
 }
@@ -104,11 +105,11 @@ public void gamemode(PlayerGameModeChangeEvent e) {
 	resetPlayer(e.getPlayer());
 }
 
-public static void resetPlayer(Player p) {
+public static void resetPlayer(final Player p) {
+
+	final PlayerInventory inv=p.getInventory();
 	Bukkit.getServer().getScheduler().runTask(plugin, new Runnable() {
-	    @Override
 	    public void run() {
-	    	PlayerInventory inv=p.getInventory();
 	    	 p.getActivePotionEffects().clear();
 	    	 RemoveEffect(p);
 	    	 for(ItemStack is: inv.getArmorContents())
@@ -170,11 +171,13 @@ public static void RemoveEffect(Player p){
 				loseeff=check(Lore,efflist); 
 		}if(loseeff && p.getInventory().getItemInMainHand() != null){
 			ItemStack i=p.getInventory().getItemInMainHand();
-			if(i.hasItemMeta()) {
-				@SuppressWarnings("deprecation")
-				String Lore=ChatColor.stripColor(i.getItemMeta().getLore().toString());
-		
-				loseeff=check(Lore,efflist);
+			if(i.hasItemMeta()){
+				if(i.getItemMeta().hasLore()){
+					@SuppressWarnings("deprecation")
+					String Lore=ChatColor.stripColor(i.getItemMeta().getLore().toString());
+			
+					loseeff=check(Lore,efflist);
+				}
 			}
 		}
 		
