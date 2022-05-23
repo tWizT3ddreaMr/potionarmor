@@ -2,6 +2,8 @@ package me.tWizT3d_dreaMr.PotionArmour;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -18,7 +20,6 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 
@@ -49,37 +50,53 @@ public void craft(CraftItemEvent e){
 
 @EventHandler
 public void Armor(PlayerArmorChangeEvent e) {
-	new BukkitRunnable() {
-	     @Override
-	     public void run() {
-	    	Player p=(Player) e.getPlayer();
-	    	addEffect(e.getNewItem(),p);
-	    	RemoveEffect(p);
+	Bukkit.getServer().getScheduler().runTask(plugin, new Runnable() {
+    @Override
+    public void run() {
+        Player p=(Player) e.getPlayer();
+	    addEffect(e.getNewItem(),p);
+	    RemoveEffect(p);
 	     }
-	};
+    
+	}
+	);
+	
 	
 }
 //inventory click
 @EventHandler
 public void invClick(InventoryClickEvent e) {
-	if(!(e.getSlot()== e.getWhoClicked().getInventory().getHeldItemSlot()||e.getSlot()==45)) return;
-	Player p=(Player)e.getWhoClicked();
-	PlayerInventory inv=p.getInventory();
-	hand(p,inv.getItemInMainHand(),inv.getItemInOffHand());
-
-	
+	Bukkit.getServer().getScheduler().runTask(plugin, new Runnable() {
+	    @Override
+	    public void run() {
+			if(!(e.getSlot()== e.getWhoClicked().getInventory().getHeldItemSlot()||e.getSlot()==45)) return;
+			Player p=(Player)e.getWhoClicked();
+			PlayerInventory inv=p.getInventory();
+			hand(p,inv.getItemInMainHand(),inv.getItemInOffHand());
+		}
+	});
 }
 //hotbar
 @EventHandler
 public void heldItem(PlayerItemHeldEvent e) {
-	PlayerInventory inv=e.getPlayer().getInventory();
-	hand(e.getPlayer(),inv.getItemInMainHand(),inv.getItemInOffHand());
+	Bukkit.getServer().getScheduler().runTask(plugin, new Runnable() {
+	    @Override
+	    public void run() {
+	    	PlayerInventory inv=e.getPlayer().getInventory();
+			hand(e.getPlayer(),inv.getItemInMainHand(),inv.getItemInOffHand());
+		}
+	});
 }
 //drop
 @EventHandler
 public void drop(PlayerDropItemEvent e) {
-	PlayerInventory inv=e.getPlayer().getInventory();
-	hand(e.getPlayer(),inv.getItemInMainHand(),inv.getItemInOffHand());
+	Bukkit.getServer().getScheduler().runTask(plugin, new Runnable() {
+	    @Override
+	    public void run() {
+			PlayerInventory inv=e.getPlayer().getInventory();
+			hand(e.getPlayer(),inv.getItemInMainHand(),inv.getItemInOffHand());
+	    }
+	});
 }
 
 @EventHandler
@@ -88,10 +105,10 @@ public void gamemode(PlayerGameModeChangeEvent e) {
 }
 
 public static void resetPlayer(Player p) {
-	PlayerInventory inv=p.getInventory();
-	new BukkitRunnable() {
-	     @Override
-	     public void run() {
+	Bukkit.getServer().getScheduler().runTask(plugin, new Runnable() {
+	    @Override
+	    public void run() {
+	    	PlayerInventory inv=p.getInventory();
 	    	 p.getActivePotionEffects().clear();
 	    	 RemoveEffect(p);
 	    	 for(ItemStack is: inv.getArmorContents())
@@ -99,31 +116,24 @@ public static void resetPlayer(Player p) {
 	    	 addEffect(inv.getItemInMainHand(), p);
 	    	 addEffect(inv.getItemInOffHand(), p);
 	     }
-	};
-
+	}
+	);
 	
 }
 public void hand(Player p, ItemStack mainHand, ItemStack offHand) {
-	new BukkitRunnable() {
-	     @Override
-	     public void run() {
-	    	 RemoveEffect(p);
-	    	 addEffect(mainHand, p);
-	    	 addEffect(offHand, p);
-	     }
-	};
-
-
-	}
+	RemoveEffect(p);
+	addEffect(mainHand, p);
+	addEffect(offHand, p);
+}
 public static void addEffect(ItemStack i, Player p){
-	
+
 if(i==null) return;
 if(!i.hasItemMeta()) return;
 if(!i.getItemMeta().hasLore()) return;
 @SuppressWarnings("deprecation")
 String Lore=ChatColor.stripColor(i.getItemMeta().getLore().toString());
 for(String eff : me.tWizT3d_dreaMr.PotionArmour.main.Effect){
-	if(me.tWizT3d_dreaMr.PotionArmour.main.config.getBoolean(eff+".Enable")){
+	if(configHandler.mconfig.getBoolean(eff+".Enable")){
 		List<String> efflist=new ArrayList<String>(configHandler.mconfig.getConfigurationSection(eff+".List").getKeys(false));
 			
 		for(int in=0; in<efflist.size(); in++){

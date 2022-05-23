@@ -35,7 +35,7 @@ public void onEnable() {
  
   public void onDisable() {}
   public void config(){
-	  if(configHandler.mconfig.contains("Version") && config.getInt("Version")==1)
+	  if(configHandler.mconfig.contains("Version") && configHandler.mconfig.getInt("Version")==1)
 		 return;
 	  
 	  configHandler.mconfig.set("Version", 1);
