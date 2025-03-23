@@ -6,3 +6,5 @@
 .settings
 target
 .factorypath
+.sdkmanrc
+todo.txt
