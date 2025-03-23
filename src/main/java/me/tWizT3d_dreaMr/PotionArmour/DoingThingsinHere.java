@@ -118,6 +118,23 @@ public class DoingThingsinHere implements Listener {
                         });
     }
 
+    //armor stand use
+    @EventHandler
+    public void armorStandInteract(PlayerArmorStandManipulateEvent e){ //PlayerInteractEntityEvent
+        final Player p = e.getPlayer();
+        final PlayerInventory inv = p.getInventory();
+        Bukkit.getServer()
+                .getScheduler()
+                .runTask(
+                        plugin,
+                        new Runnable() {
+                            public void run() {
+                                hand(p, inv.getItemInMainHand(), inv.getItemInOffHand());
+                            }
+                        });
+    }
+
+
     @EventHandler
     public void gamemode(PlayerGameModeChangeEvent e) {
         resetPlayer(e.getPlayer());
@@ -187,6 +204,8 @@ public class DoingThingsinHere implements Listener {
     }
 
     public static void RemoveEffect(Player p) {
+        //TODO: remove effects higher than intended level
+        // e.g. regen I item will maintain a regen II effect even when regen II effect would normally finish
         for (String eff : me.tWizT3d_dreaMr.PotionArmour.main.Effect) {
             if (me.tWizT3d_dreaMr.PotionArmour.configHandler.hasEffect(p, eff)) {
                 List<String> efflist =

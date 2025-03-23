@@ -1,4 +1,8 @@
 /bin/
 *.class
 /target/
-f
+.classpath
+.project
+.settings
+target
+.factorypath
