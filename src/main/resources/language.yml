@@ -1,0 +1,13 @@
+# language.yml
+# need to import package me.tWizT3d_dreaMr.tWizT3dLib.Lib.colors
+# call colors.formatnp(String message)
+config_reload: "config reloaded"
+no_perms: "&cNo permission."
+invalid_command: "&cPlease check your command"
+failed_save: "Cannot save file, exists: "
+supported_effects: "Supported effects include: "
+
+# not sure if good idea or necessary to have printing of the passed parameter
+reset_notice: "&bYou have reset effects for: &3"
+player_not_found: "&cPlayer not found: &4"
+change_async: "&cTo change async behavior, must restart."

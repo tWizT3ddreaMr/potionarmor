@@ -1,136 +1,85 @@
-SPEED:
-  Enable: false
-  List:
-    - Kolbi
-    - SPEED
-SLOW:
-  Enable: false
-  List:
-    - Kolbi
-    - SLOW
-FAST_DIGGING:
-  Enable: false
-  List:
-    - Kolbi
-    - FAST_DIGGING
-SLOW_DIGGING:
-  Enable: false
-  List:
-    - Kolbi
-    - SLOW_DIGGING
-INCREASE_DAMAGE:
-  Enable: false
-  List:
-    - Kolbi
-    - INCREASE_DAMAGE
-HARM:
-  Enable: false
-  List:
-    - Kolbi
-    - HARM
-HEAL:
-  Enable: false
-  List:
-    - Kolbi
-    - HEAL
-JUMP:
-  Enable: false
-  List:
-    - Kolbi
-    - JUMP
-CONFUSION:
-  Enable: false
-  List:
-    - Kolbi
-    - CONFUSION
-REGENERATION:
-  Enable: false
-  List:
-    - Kolbi
-    - REGENERATION
-DAMAGE_RESISTANCE:
-  Enable: false
-  List:
-    - Kolbi
-    - DAMAGE_RESISTANCE
-FIRE_RESISTANCE:
-  Enable: false
-  List:
-    - Kolbi
-    - FIRE_RESISTANCE
-WATER_BREATHING:
-  Enable: false
-  List:
-    - Kolbi
-    - WATER_BREATHING
-INVISIBILITY:
-  Enable: false
-  List:
-    - Kolbi
-    - INVISIBILITY
-BLINDNESS:
-  Enable: false
-  List:
-    - Kolbi
-    - BLINDNESS
-NIGHT_VISION:
-  Enable: false
-  List:
-    - Kolbi
-    - NIGHT_VISION
-HUNGER:
-  Enable: false
-  List:
-    - Kolbi
-    - HUNGER
-WEAKNESS:
-  Enable: false
-  List:
-    - Kolbi
-    - WEAKNESS
-POISON:
-  Enable: false
-  List:
-    - Kolbi
-    - POISON
-WITHER:
-  Enable: false
-  List:
-    - Kolbi
-    - WITHER
-HEALTH_BOOST:
-  Enable: false
-  List:
-    - Kolbi
-    - HEALTH_BOOST
-ABSORPTION:
-  Enable: false
-  List:
-    - Kolbi:
-      -10
-    - ABSORPTION
-SATURATION:
-  Enable: false
-  List:
-    - Kolbi
-    - SATURATION
-GLOWING:
-  Enable: false
-  List:
-    - Kolbi
-    - GLOWING
-LEVITATION:
-  Enable: false
-  List:
-    - Kolbi
-    - LEVITATION
-LUCK:
-  Enable: false
-  List:
-    - Kolbi
-    - LUCK
-UNLUCK:
-  Enable: false
-  List:
-    - Kolbi
-    - UNLUCK
+meta:
+  language_loc: language.yml
+  version: 1.0
+# async-multithreading options:
+  async: true
+  threads: 4
+  maxThreads: 10
+  capacity: 200 # thread queue job capacity, will reject new jobs after full
+  timeout: 60 # how long to wait before killing idle threads
+  unit: SECONDS # timeout time unit
+
+Effects:
+  item1:
+    loreline: "my awesome lore"
+    slot: any
+    effect1:
+      enable: false
+      type: trail
+      effect: star
+      style: ""
+      data:
+        type: ordinary_color
+        r: 100
+        g: 100
+        b: 100
+        # must be 0-255
+        # 999,999,999 is rainbow
+        # 998,998,998 is random
+    effect2:
+      enable: false
+      type: effect
+      effect: minecraft:regeneration
+      level: 1
+    effect3:
+      enable: false
+      type: trail
+      effect: star
+      style: ""
+      data:
+        type: color_transition
+        r: 100
+        g: 100
+        b: 100
+        r2: 100
+        g2: 100
+        b2: 100
+        # must be 0-255
+        # 999,999,999 is rainbow
+        # 998,998,998 is random
+    effect4:
+      enable: false
+      type: trail
+      effect: star
+      style: ""
+      data:
+        type: note_color
+        note: 5
+        # must be 0 - 24
+        # 99 is random
+        # 98 is rainbow
+    effect5:
+      enable: false
+      type: trail
+      effect: star
+      style: ""
+      data:
+        type: vibration
+        duration: 100
+        # arrival time in ticks
+    effect6:
+      enable: false
+      type: trail
+      effect: star
+      style: ""
+      data:
+        type: material
+        material: stone
+  item2:
+    loreline: "my second awesome lore"
+    slot: hand
+    effect1:
+      enable: false
+      type: effect
+      effect: minecraft:regeneration
+      level: 1

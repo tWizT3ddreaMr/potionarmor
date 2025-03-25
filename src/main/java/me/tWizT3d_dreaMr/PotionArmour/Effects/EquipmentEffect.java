@@ -1,0 +1,81 @@
+package me.tWizT3d_dreaMr.PotionArmour.Effects;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.inventory.EquipmentSlotGroup;
+
+import dev.esophose.playerparticles.api.PlayerParticlesAPI;
+
+public abstract class EquipmentEffect implements Comparable<EquipmentEffect>, Cloneable {
+
+	EquipmentEffect.EffectOrder order = EffectOrder.BASE;
+
+	public EquipmentSlotGroup slot = EquipmentSlotGroup.ANY;
+
+	public abstract boolean applyTo(LivingEntity p);
+
+	public abstract boolean removeFrom(LivingEntity p);
+
+	public abstract String toString();
+
+	public static EquipmentEffect parseEffect(ConfigurationSection s,
+			EquipmentSlotGroup slot, PlayerParticlesAPI ppAPI) {
+		if (!s.getBoolean("enable"))
+			return null;
+		switch (s.getString("type")) {
+			case "trail":
+				return TrailEffect.fromConfig(ppAPI, slot, s);
+			case "effect":
+				return PotionEffect.fromConfig(slot, s);
+			default:
+				return null;
+		}
+	}
+
+	public static List<EquipmentEffect> parseEffectList(ConfigurationSection s,
+			PlayerParticlesAPI ppAPI, Logger logger) {
+		List<EquipmentEffect> effects = new ArrayList<EquipmentEffect>();
+		EquipmentSlotGroup slot = EquipmentSlotGroup.getByName(s.getString("slot").toUpperCase());
+		Map<String, Object> effectsMap = s.getValues(false);
+		for (String effectName : effectsMap.keySet()) {
+			ConfigurationSection effectSection = ((ConfigurationSection) effectsMap.get(effectName));
+			if (effectName == "loreline" || effectName == "slot")
+				continue; // ignore non-effect list entries
+			EquipmentEffect e = EquipmentEffect.parseEffect(effectSection, slot, ppAPI);
+			if (e == null) {
+				logger.log(Level.SEVERE, "Malformed effect in config: " + effectName);
+				continue;
+			}
+			effects.add(e);
+		}
+		return effects;
+	}
+
+	// populate effectTable from config file
+	public static Map<String, List<EquipmentEffect>> fromConfig(FileConfiguration file,
+			PlayerParticlesAPI ppAPI, Logger logger) {
+		Map<String, List<EquipmentEffect>> effectsTable = new HashMap<String, List<EquipmentEffect>>();
+		Map<String, Object> entries = file.getConfigurationSection("Effects").getValues(false);
+		for (String item_id : entries.keySet()) {
+			ConfigurationSection entry = ((ConfigurationSection) entries.get(item_id));
+			String loreline = entry.getString("loreline");
+			List<EquipmentEffect> effects = EquipmentEffect.parseEffectList(entry, ppAPI, logger);
+			effectsTable.put(loreline, effects);
+		}
+		return effectsTable;
+	}
+
+	public enum EffectOrder{ //used for sorting subclasses
+		BASE,
+		POTION,
+		TRAIL
+	}
+}
