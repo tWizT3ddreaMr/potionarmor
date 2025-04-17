@@ -1,7 +1,7 @@
 name: ${project.artifactId}
 author: tWizT3d_dreaMr,TonyJamesStark
 version: ${project.version}
-main: me.tWizT3d_dreaMr.PotionArmour.main
+main: me.tWizT3d_dreaMr.PotionArmour.PotionArmorPlugin
 depend: [PlayerParticles]
 commands:
   Pareset:
@@ -13,6 +13,9 @@ commands:
   effects:
     description: Displays supported potion effects.
     usage: effects
+  debugDump:
+    description: Print information useful for debugging
+    usage: debugDump
 permissions:
   Potionarmor.pareset:
     default: op
@@ -23,4 +26,7 @@ permissions:
   Potionarmor.effects:
     default: op
     description: Allows printing of supported potion effects
+  Potionarmor.debug:
+    default: op
+    description: Permits use of debug commands
 api-version: 1.21

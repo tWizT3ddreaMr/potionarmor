@@ -5,8 +5,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -23,12 +25,6 @@ import me.tWizT3d_dreaMr.PotionArmour.Effects.EquipmentEffect;
 import net.md_5.bungee.api.ChatColor;
 
 public class EffectManager {
-
-	// currently only async is effect application
-	// TODO: consider adding item lookup/lore processing too
-
-	// TODO: Handle slot checking...
-
 	PotionArmorPlugin p;
 	private PlayerParticlesAPI ppAPI;
 	private final String LORE_DELIM = "|";
@@ -47,6 +43,7 @@ public class EffectManager {
 			ppAPI = PlayerParticlesAPI.getInstance();
 		} else {
 			p.logger.log(Level.SEVERE, "PlayerParticles is not loaded, trail support will not be active.");
+			// TODO: fix crash calling null api
 		}
 	}
 
@@ -61,52 +58,71 @@ public class EffectManager {
 		}
 	}
 
-	public void loadEffects(FileConfiguration cfg) {
-		effectsTable.putAll(EquipmentEffect.fromConfig(cfg, ppAPI, p.logger));
+	public int loadEffects(FileConfiguration cfg) {
+		Map<String, List<EquipmentEffect>> loaded = EquipmentEffect.fromConfig(cfg, ppAPI, p.logger);
+		effectsTable.putAll(loaded);
+		return loaded.size();
 	}
 
 	EquipmentSlot[] slots = {
-		EquipmentSlot.FEET, 
-		EquipmentSlot.LEGS,
-		EquipmentSlot.CHEST,
-		EquipmentSlot.HEAD,
-		EquipmentSlot.HAND,
-		EquipmentSlot.OFF_HAND
+			EquipmentSlot.FEET,
+			EquipmentSlot.LEGS,
+			EquipmentSlot.CHEST,
+			EquipmentSlot.HEAD,
+			EquipmentSlot.HAND,
+			EquipmentSlot.OFF_HAND
 	};
 
 	public void resetPlayerEffects(Player _p) {
-		FutureTask<Void> job = new FutureTask<Void>(new Callable<Void>() {
-			@Override
-			public Void call() {
-				PlayerInventory inv = _p.getInventory();
-				List<ItemStack> equipment = new ArrayList<ItemStack>();
-				equipment.addAll(Arrays.asList(inv.getArmorContents())); //in order, boots, legs, chest, helmet
-				equipment.add(inv.getItemInMainHand());
-				equipment.add(inv.getItemInOffHand());
+		Callable<Void> task = () -> {
+			PlayerInventory inv = _p.getInventory();
+			List<ItemStack> equipment = new ArrayList<ItemStack>();
+			equipment.addAll(Arrays.asList(inv.getArmorContents())); // in order, boots, legs, chest, helmet
+			equipment.add(inv.getItemInMainHand());
+			equipment.add(inv.getItemInOffHand());
 
+			// bukkit methods must be run on main thread
+			Callable<Void> forMain = () -> {
 				_p.clearActivePotionEffects();
 				ppAPI.resetActivePlayerParticles(_p);
-				for (int i = 0; i < equipment.size(); i++) {
-					addEquipment(_p, equipment.get(i), slots[i]);
-				}
+				return null;
+			};
+			Future<Void> _task = Bukkit.getServer().getScheduler().callSyncMethod(
+					PotionArmorPlugin.plugin, forMain);
+
+			// must sync here
+			try {
+				_task.get(60, TimeUnit.SECONDS);
+			} catch (Exception e) {
+				// task failed successfully
 				return null;
 			}
-		});
+
+			for (int i = 0; i < equipment.size(); i++) {
+				addEquipment(_p, equipment.get(i), slots[i]);
+			}
+			return null;
+		};
+		FutureTask<Void> job = new FutureTask<>(task);
 		p.submitAsyncTask(job);
 	}
 
 	private void removeEffects(Player _p, List<String> lines) {
-		FutureTask<Void> job = new FutureTask<Void>(new Callable<Void>() {
-			@Override
-			public Void call() {
-				for (String loreLine : lines) {
-					for (EquipmentEffect eff : effectsTable.get(loreLine)) {
+		Callable<Void> task = () -> {
+			for (String loreLine : lines) {
+				for (EquipmentEffect eff : effectsTable.get(loreLine)) {
+					// bukkit methods must be run on main thread
+					Callable<Void> mainTask = () -> {
 						eff.removeFrom(_p);
-					}
+						return null;
+					};
+					Bukkit.getServer().getScheduler().callSyncMethod(
+							PotionArmorPlugin.plugin, mainTask);
 				}
-				return null;
 			}
-		});
+			return null;
+		};
+		FutureTask<Void> job = new FutureTask<Void>(task);
 		p.submitAsyncTask(job);
 	}
 
@@ -122,19 +138,24 @@ public class EffectManager {
 		List<String> lore = getLore(i);
 		if (lore == null || _p == null)
 			return;
-		FutureTask<Void> job = new FutureTask<Void>(new Callable<Void>() {
-			@Override
-			public Void call() {
-				for (String line : getCached(lore)) {
-					for (EquipmentEffect eff : effectsTable.get(line)) {
-						if (!eff.slot.test(slot)) //could probably move to outer loop
-							continue;
-						eff.applyTo(_p);
+		Callable<Void> task = () -> {
+			for (String line : getCached(lore)) {
+				for (EquipmentEffect eff : effectsTable.get(line)) {
+					if (!eff.slot.test(slot)) { // could probably move to outer loop
+						continue;
 					}
+					// bukkit methods must be run on main thread
+					Callable<Void> mainTask = () -> {
+						eff.applyTo(_p);
+						return null;
+					};
+					Bukkit.getServer().getScheduler().callSyncMethod(
+							PotionArmorPlugin.plugin, mainTask);
 				}
-				return null;
 			}
-		});
+			return null;
+		};
+		FutureTask<Void> job = new FutureTask<Void>(task);
 		p.submitAsyncTask(job);
 	}
 
@@ -145,7 +166,7 @@ public class EffectManager {
 			linesWithEffects = loreCache.get(loreKey);
 		} else {
 			for (String line : lore) {
-				if (!effectsTable.containsKey(line)) 
+				if (!effectsTable.containsKey(line))
 					continue;
 				linesWithEffects.add(line);
 			}
@@ -183,8 +204,6 @@ public class EffectManager {
 			addEquipment(_p, _new, slot);
 			return;
 		}
-		// addEquipment(_p, _new, false);
-		// removeEquipment(_p, _old, false);
 		resetPlayerEffects(_p);
 	}
 
@@ -200,6 +219,14 @@ public class EffectManager {
 		return meta.getLore().stream()
 				.map(line -> ChatColor.stripColor(line))
 				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Dump contents of cache and effectsTable to logs for debugging
+	 */
+	public void dump() {
+		System.out.println(effectsTable);
+		System.out.println(loreCache);
 	}
 
 }

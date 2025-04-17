@@ -1,43 +1,41 @@
 /* (C)2024 */
 package me.tWizT3d_dreaMr.PotionArmour;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Registry;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.Registry;
-import org.bukkit.NamespacedKey;
-import org.bukkit.OfflinePlayer;
 
 public class PotionArmorPlugin extends org.bukkit.plugin.java.JavaPlugin {
     public Logger logger = getLogger();
-    public static Plugin plugin;
-    public static FileConfiguration config;
-    public static FileConfiguration lang;
+    public static PotionArmorPlugin plugin;
+    public FileConfiguration config;
+    public FileConfiguration lang;
     // public static List<FileConfiguration> moreEffectsConfig; // to add for
     // 'effects/' dir
-    private static File config_dir;
-    public static EventListener listener;
-    public static EffectManager manager;
-    public static List<NamespacedKey> supportedEffects = new ArrayList<NamespacedKey>();
+    private File config_dir;
+    public EventListener listener;
+    public EffectManager manager;
+    public List<NamespacedKey> supportedEffects = new ArrayList<NamespacedKey>();
 
     // check out java.util.concurrent.Executors#newFixedThreadPool
     // probably a ThreadPoolExecutor with corePoolSize=4 ish, maximumPoolSize=20ish,
@@ -58,7 +56,7 @@ public class PotionArmorPlugin extends org.bukkit.plugin.java.JavaPlugin {
         plugin = this;
         setSupportedEffects(); // TODO: add config option to disable certain effects
         config_dir = getDataFolder();
-        reloadConfigs();
+        reloadConfigs(false);
 
         manager = new EffectManager(this);
         listener = new EventListener(manager);
@@ -78,7 +76,10 @@ public class PotionArmorPlugin extends org.bukkit.plugin.java.JavaPlugin {
 
     @Override
     public void onDisable() {
-        saveConfig(); // in case loaded default configs
+        this.saveConfig(); // in case loaded default configs
+        if (workAsync)
+            cancelAllTasks();
+        pool.close();
     }
 
     public void setSupportedEffects() {
@@ -96,13 +97,8 @@ public class PotionArmorPlugin extends org.bukkit.plugin.java.JavaPlugin {
     }
 
     @Override
-    public FileConfiguration getConfig() {
-        return config;
-    }
-
-    @Override
     public void saveConfig() {
-        List<String> comments = config.getComments("");
+        List<String> comments = new ArrayList<>(this.config.getComments("SupportedEffects"));
 
         // ensure effects list in comments
         if (!comments.contains(supportedEffects.get(0).toString())) {
@@ -110,15 +106,16 @@ public class PotionArmorPlugin extends org.bukkit.plugin.java.JavaPlugin {
             for (NamespacedKey k : supportedEffects) {
                 comments.add(k.toString());
             }
-            config.setComments("", comments);
+            this.config.setComments("SupportedEffects", comments);
         }
         super.saveConfig();
+        this.config = getConfig();
 
-        String lang_path = config.getString("language_loc");
+        File lang_loc = new File(config_dir, config.getString("language_loc", "language.yml"));
         try {
-            lang.save(lang_path);
+            this.lang.save(lang_loc);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, lang.getString("failed_save") + lang_path);
+            logger.log(Level.SEVERE, lang.getString("failed_save") + lang_loc.toString());
         }
     }
 
@@ -153,47 +150,65 @@ public class PotionArmorPlugin extends org.bukkit.plugin.java.JavaPlugin {
     }
 
     public boolean reloadConfigs() {
-        // note: void reloadConfig() (no 's') is a superclass method, don't get confused
-        return reloadConfigs((CommandSender) Bukkit.getConsoleSender());
+        return reloadConfigs(true);
     }
 
     public boolean reloadConfigs(CommandSender sender) {
+        return reloadConfigs(sender, true);
+    }
+
+    public boolean reloadConfigs(boolean isSetup) {
+        // note: void reloadConfig() (no 's') is a superclass method, don't get confused
+        return reloadConfigs((CommandSender) Bukkit.getConsoleSender(), isSetup);
+    }
+
+    public boolean reloadConfigs(CommandSender sender, boolean isSetup) {
         acceptNewJobs = false;
         boolean saveNeeded = false;
         if (!checkPerms(sender, "Potionarmor.reload"))
             return true;
 
         if (!(config_dir.exists() && config_dir.isDirectory())) {
+            sender.sendMessage("Configuration directory not found, writing default");
             config_dir.delete();
             config_dir.mkdir();
+            saveDefaultConfig();
             saveNeeded = true;
         }
 
-        config = getConfig();
+        reloadConfig();
+        this.config = getConfig();
+
+        if (this.config == null) {
+            this.saveConfig(); // will not overwrite existing, defaults to embedded
+            this.config = getConfig();
+        }
+
         // TODO: check version and convert to new format
-        String lang_path = config.getString("meta.language_file");
 
-        List<String> config_files = Arrays.asList(config_dir.list());
-        if (!config_files.contains(lang_path)) {
-            lang = YamlConfiguration.loadConfiguration(
-                    new InputStreamReader(getResource(lang_path)));
-            saveNeeded = true;
-        } else {
-            lang = YamlConfiguration.loadConfiguration(new File(lang_path));
+        File lang_loc = new File(config_dir, this.config.getString("meta.language_loc"));
+        if (!lang_loc.exists()) {
+            saveResource("language.yml", true); // overwrites
         }
+        this.lang = YamlConfiguration.loadConfiguration(lang_loc);
 
         for (Player p : Bukkit.getOnlinePlayers()) {
             manager.resetPlayerEffects(p);
         }
-        if (saveNeeded)
-            saveConfig();
-        manager.resetLoreCache();
-        acceptNewJobs = workAsync;
-        if (workAsync != config.getBoolean("meta.async")){
-            logger.log(Level.SEVERE, "To change async option, must restart.");
-            sender.sendMessage(lang.getString("change_async"));
+        if (saveNeeded) {
+            this.saveConfig();
         }
-        sender.sendMessage(lang.getString("config_reload"));
+        if (isSetup) {
+            this.manager.resetLoreCache();
+            int loadedEffects = this.manager.loadEffects(this.config);
+            logger.log(Level.FINEST, "Loaded " + loadedEffects + " effects.");
+            acceptNewJobs = this.workAsync;
+            if (this.workAsync != this.config.getBoolean("meta.async")) {
+                this.logger.log(Level.SEVERE, "To change async option, must restart.");
+                sender.sendMessage(this.lang.getString("change_async"));
+            }
+        }
+        sender.sendMessage(this.lang.getString("config_reload"));
         return true;
     }
 
@@ -240,17 +255,28 @@ public class PotionArmorPlugin extends org.bukkit.plugin.java.JavaPlugin {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String commandName = command.getName().toLowerCase();
         switch (commandName) {
-            case "Pareset":
+            case "pareset":
                 return resetPlayer(sender, args);
             case "reload":
                 return reloadConfigs(sender);
             case "effects":
                 return printEffects(sender);
+            case "debugdump":
+                return dumpManager(sender);
             default:
                 break;
         }
         sender.sendMessage(lang.getString("invalid_command"));
         return false;
+    }
+
+    public boolean dumpManager(CommandSender sender) {
+        if (!(sender instanceof ConsoleCommandSender)) {
+            sender.sendMessage("Command only supported from console.");
+            return true;
+        }
+        manager.dump();
+        return true;
     }
 
     private static final class AsyncOptions {
@@ -289,14 +315,14 @@ public class PotionArmorPlugin extends org.bukkit.plugin.java.JavaPlugin {
 
     public void submitAsyncTask(Runnable job) {
         if (!workAsync) {
-            job.run(); //blocks
+            job.run(); // blocks
         }
         if (acceptNewJobs) {
             try {
                 pool.execute(job);
             } catch (RejectedExecutionException e) {
-                logger.log(Level.SEVERE, 
-                    "Job queue is full, rejecting event...Try increasing capcaity");
+                logger.log(Level.SEVERE,
+                        "Job queue is full, rejecting event...try increasing capcaity");
             }
         }
     }

@@ -15,21 +15,21 @@ public class TrailData {
 	DataType type;
 	String str;
 
-	public TrailData(){
+	public TrailData() {
 		this(null, null);
 	}
 
-	public TrailData(DataType _type, Object _dataObject){
+	public TrailData(DataType _type, Object _dataObject) {
 		dataObject = _dataObject;
 		type = _type;
 	}
 
-	public Object getData(){
+	public Object getData() {
 		return dataObject;
 	}
 
 	public static TrailData fromConfig(ConfigurationSection cfg) {
-		if(cfg == null){
+		if (cfg == null) {
 			return null;
 		}
 		String typeName = cfg.getString("type", "");
@@ -50,11 +50,11 @@ public class TrailData {
 				break;
 			case "note_color":
 				type = DataType.NOTE_COLOR;
-				obj = new NoteColor(cfg.getInt("note",0));
+				obj = new NoteColor(cfg.getInt("note", 0));
 				break;
 			case "vibration":
 				type = DataType.VIBRATION;
-				obj = new Vibration(cfg.getInt("duration",0));
+				obj = new Vibration(cfg.getInt("duration", 0));
 				break;
 			case "ordinary_color":
 				type = DataType.ORDINARY_COLOR;
@@ -66,7 +66,7 @@ public class TrailData {
 			case "material":
 				type = DataType.MATERIAL;
 				obj = Registry.MATERIAL.get(
-					NamespacedKey.fromString(cfg.getString("material")));
+						NamespacedKey.fromString(cfg.getString("material")));
 				break;
 			default:
 				return null;
@@ -75,8 +75,30 @@ public class TrailData {
 		return new TrailData(type, obj);
 	}
 
-	public String toString(){
-		return "TrailData: {" + this.type.toString() + " " + this.dataObject.toString() + "}";
+	public String toString() {
+		return "TrailData: {" + this.type.toString() + " " + dataToString(this.dataObject) + "}";
+	}
+
+	private String dataToString(Object obj) {
+		if (obj instanceof ColorTransition) {
+			return "ColorTransition: "
+					+ colorToString(((ColorTransition) obj).getStartColor())
+					+ " | " + colorToString(((ColorTransition) obj).getEndColor());
+		} else if (obj instanceof OrdinaryColor) {
+			return "OrdinaryColor: " + colorToString((OrdinaryColor) obj);
+		} else if (obj instanceof NoteColor) {
+			return "NoteColor: " + ((NoteColor) obj).getNote();
+		} else if (obj instanceof Vibration) {
+			return "Vibration: " + ((Vibration) obj).getDuration();
+		} else if (obj instanceof String) {
+			return "Material: " + obj;
+		} else {
+			return "Bad data: " + obj.toString();
+		}
+	}
+
+	private String colorToString(OrdinaryColor c) {
+		return "" + c.getRed() + "/" + c.getBlue() + "/" + c.getGreen();
 	}
 
 	public enum DataType {

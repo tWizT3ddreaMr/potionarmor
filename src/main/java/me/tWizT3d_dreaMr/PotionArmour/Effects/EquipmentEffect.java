@@ -28,8 +28,9 @@ public abstract class EquipmentEffect implements Comparable<EquipmentEffect>, Cl
 
 	public static EquipmentEffect parseEffect(ConfigurationSection s,
 			EquipmentSlotGroup slot, PlayerParticlesAPI ppAPI) {
-		if (!s.getBoolean("enable"))
-			return null;
+		if (!s.getBoolean("enable")) {
+			return null; // this check should be redundant
+		}
 		switch (s.getString("type")) {
 			case "trail":
 				return TrailEffect.fromConfig(ppAPI, slot, s);
@@ -44,17 +45,20 @@ public abstract class EquipmentEffect implements Comparable<EquipmentEffect>, Cl
 			PlayerParticlesAPI ppAPI, Logger logger) {
 		List<EquipmentEffect> effects = new ArrayList<EquipmentEffect>();
 		EquipmentSlotGroup slot = EquipmentSlotGroup.getByName(s.getString("slot").toUpperCase());
-		Map<String, Object> effectsMap = s.getValues(false);
+		Map<String, Object> effectsMap = s.getValues(false); // shallow lookup of section keys
 		for (String effectName : effectsMap.keySet()) {
-			ConfigurationSection effectSection = ((ConfigurationSection) effectsMap.get(effectName));
-			if (effectName == "loreline" || effectName == "slot")
+			if (effectName.equals("loreline") || effectName.equals("slot")) {
 				continue; // ignore non-effect list entries
-			EquipmentEffect e = EquipmentEffect.parseEffect(effectSection, slot, ppAPI);
-			if (e == null) {
-				logger.log(Level.SEVERE, "Malformed effect in config: " + effectName);
-				continue;
 			}
-			effects.add(e);
+			ConfigurationSection effectSection = ((ConfigurationSection) effectsMap.get(effectName));
+			if (effectSection.getBoolean("enable")) {
+				EquipmentEffect e = EquipmentEffect.parseEffect(effectSection, slot, ppAPI);
+				if (e == null) {
+					logger.log(Level.SEVERE, "Malformed effect in config: " + effectName);
+					continue;
+				}
+				effects.add(e);
+			}
 		}
 		return effects;
 	}
@@ -73,7 +77,7 @@ public abstract class EquipmentEffect implements Comparable<EquipmentEffect>, Cl
 		return effectsTable;
 	}
 
-	public enum EffectOrder{ //used for sorting subclasses
+	public enum EffectOrder { // used for sorting subclasses
 		BASE,
 		POTION,
 		TRAIL

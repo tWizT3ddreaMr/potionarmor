@@ -8,6 +8,7 @@ import org.bukkit.inventory.EquipmentSlotGroup;
 
 import dev.esophose.playerparticles.api.PlayerParticlesAPI;
 import dev.esophose.playerparticles.particles.ParticleEffect;
+import dev.esophose.playerparticles.particles.ParticlePair;
 import dev.esophose.playerparticles.styles.ParticleStyle;
 import dev.esophose.playerparticles.particles.data.ColorTransition;
 import dev.esophose.playerparticles.particles.data.OrdinaryColor;
@@ -24,7 +25,7 @@ public class TrailEffect extends EquipmentEffect {
 	EquipmentEffect.EffectOrder order = EquipmentEffect.EffectOrder.TRAIL;
 
 	public TrailEffect(PlayerParticlesAPI pp) {
-		this(pp, null, "none", "none", null);
+		this(pp, EquipmentSlotGroup.ANY, "small_flame", "overhead", null);
 	}
 
 	public TrailEffect(PlayerParticlesAPI pp, EquipmentSlotGroup slot, String effect, String style, ConfigurationSection data) {
@@ -51,40 +52,41 @@ public class TrailEffect extends EquipmentEffect {
 		if (!(p instanceof Player)) {
 			return false;
 		}
+		ParticlePair applied = null;
 
 		switch (this.data.type) {
 			case COLOR_TRANSITION:
-				api.addActivePlayerParticle(
+				applied = api.addActivePlayerParticle(
 						(Player) p, this.effect, this.style, (ColorTransition) this.data.dataObject);
 				break;
 			case NOTE_COLOR:
-				api.addActivePlayerParticle(
+				applied = api.addActivePlayerParticle(
 						(Player) p, this.effect, this.style, (NoteColor) this.data.dataObject);
 				break;
 			case ORDINARY_COLOR:
-				api.addActivePlayerParticle(
+				applied = api.addActivePlayerParticle(
 						(Player) p, this.effect, this.style, (OrdinaryColor) this.data.dataObject);
 				break;
 			case VIBRATION:
-				api.addActivePlayerParticle(
+				applied = api.addActivePlayerParticle(
 						(Player) p, this.effect, this.style, (Vibration) this.data.dataObject);
 				break;
 			case MATERIAL:
-				api.addActivePlayerParticle(
+				applied = api.addActivePlayerParticle(
 						(Player) p, this.effect, this.style, (Material) this.data.dataObject);
 				break;
-			default: //no data
-				api.addActivePlayerParticle((Player) p, this.effect, this.style);
+			default: // no data
+				applied = api.addActivePlayerParticle((Player) p, this.effect, this.style);
 		}
-		return true;
-
+		return applied != null;
 	}
 
 	@Override
 	public boolean removeFrom(LivingEntity p) {
-		if(!(p instanceof Player))
+		if (!(p instanceof Player))
 			return false;
-		//TODO: remove specific particle effect, rather than all effects of the same particle type
+		// TODO: remove specific particle effect, rather than all effects of the same
+		// particle type
 		api.removeActivePlayerParticles((Player) p, this.effect);
 		return true;
 	}

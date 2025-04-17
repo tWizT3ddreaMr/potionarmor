@@ -12,8 +12,6 @@ public class PotionEffect extends EquipmentEffect {
 	public static final int MAX_DURATION = 2147000;
 
 	org.bukkit.potion.PotionEffect effect;
-	// Registry<PotionEffectType>.get(NamepspacedKey.fromString() or .minecraft())
-	// or getOrThrow()
 	int level = 0;
 	String str = "";
 	EquipmentEffect.EffectOrder order = EffectOrder.POTION;
@@ -45,7 +43,7 @@ public class PotionEffect extends EquipmentEffect {
 
 	@Override
 	public boolean applyTo(LivingEntity p) {
-		return effect.apply(p);
+		return p.addPotionEffect(effect);
 	}
 
 	@Override
@@ -60,19 +58,25 @@ public class PotionEffect extends EquipmentEffect {
 
 	@Override
 	public boolean removeFrom(LivingEntity p) {
-		// org.bukkit.potion.PotionEffect active = p.getPotionEffect(this.effect.getType());
+		// org.bukkit.potion.PotionEffect active =
+		// p.getPotionEffect(this.effect.getType());
 		// leave stronger or longer effects alone
-		// TODO: fix behavior that drinking stronger potion will leave persistent long duration potion effect
+
+		// TODO: fix behavior that drinking stronger potion will leave persistent long
+		// duration potion effect
+		
 		// if (compareEffectsIgnoreDuration(active, this.effect)) {
-		// 	p.removePotionEffect(this.effect.getType());
+		// p.removePotionEffect(this.effect.getType());
 		// }
 
-		// TODO: remove only specific potion effect, rather than all effects of same class
+		// TODO: remove only specific potion effect, rather than all effects of same
+		// class
 		p.removePotionEffect(this.effect.getType());
 		return true;
 	}
 
-	private boolean compareEffectsIgnoreDuration(org.bukkit.potion.PotionEffect one,
+	private boolean equalsEffectIgnoreDuration(
+			org.bukkit.potion.PotionEffect one,
 			org.bukkit.potion.PotionEffect two) {
 		return (one.getAmplifier() == two.getAmplifier())
 				&& (one.getType() == two.getType());

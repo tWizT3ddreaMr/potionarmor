@@ -1,13 +1,19 @@
+# PotionArmor Plugin Configuration
+# see effects at https://github.com/Rosewood-Development/PlayerParticles/blob/master/src/main/java/dev/esophose/playerparticles/particles/ParticleEffect.java
+# see styles at https://github.com/Rosewood-Development/PlayerParticles/blob/master/src/main/java/dev/esophose/playerparticles/styles/DefaultStyles.java
+
 meta:
   language_loc: language.yml
   version: 1.0
-# async-multithreading options:
+  # async-multithreading options:
   async: true
   threads: 4
   maxThreads: 10
   capacity: 200 # thread queue job capacity, will reject new jobs after full
   timeout: 60 # how long to wait before killing idle threads
   unit: SECONDS # timeout time unit
+
+SupportedEffects: ""
 
 Effects:
   item1:
@@ -16,8 +22,8 @@ Effects:
     effect1:
       enable: false
       type: trail
-      effect: star
-      style: ""
+      effect: entity_effect
+      style: overhead
       data:
         type: ordinary_color
         r: 100
@@ -34,8 +40,8 @@ Effects:
     effect3:
       enable: false
       type: trail
-      effect: star
-      style: ""
+      effect: dust_color_transition
+      style: overhead
       data:
         type: color_transition
         r: 100
@@ -50,8 +56,8 @@ Effects:
     effect4:
       enable: false
       type: trail
-      effect: star
-      style: ""
+      effect: note
+      style: overhead
       data:
         type: note_color
         note: 5
@@ -61,8 +67,8 @@ Effects:
     effect5:
       enable: false
       type: trail
-      effect: star
-      style: ""
+      effect: vibration
+      style: overhead
       data:
         type: vibration
         duration: 100
@@ -70,8 +76,8 @@ Effects:
     effect6:
       enable: false
       type: trail
-      effect: star
-      style: ""
+      effect: block
+      style: overhead
       data:
         type: material
         material: stone
