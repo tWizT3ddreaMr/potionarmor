@@ -3,6 +3,7 @@ author: tWizT3d_dreaMr,TonyJamesStark
 version: ${project.version}
 main: me.tWizT3d_dreaMr.PotionArmour.PotionArmorPlugin
 depend: [PlayerParticles]
+softDepends: [libsdisguises]
 commands:
   Pareset:
     description: Reset players effects.

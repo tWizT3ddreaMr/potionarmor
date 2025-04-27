@@ -15,19 +15,31 @@
       <id>rwd-repo</id>
       <url>https://repo.rosewooddev.io/repository/public/</url>
     </repository>
+    <repository>
+      <id>md_5-public</id>
+      <url>https://repo.md-5.net/content/groups/public/</url>
+    </repository>
+
+
   </repositories>
 
   <dependencies>
     <dependency>
       <groupId>io.papermc.paper</groupId>
       <artifactId>paper-api</artifactId>
-      <version>1.21.1-R0.1-SNAPSHOT</version>
+      <version>1.21.4-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>dev.esophose</groupId>
       <artifactId>playerparticles</artifactId>
       <version>8.8</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>me.libraryaddict.disguises</groupId>
+      <artifactId>libsdisguises</artifactId>
+      <version>11.0.0</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

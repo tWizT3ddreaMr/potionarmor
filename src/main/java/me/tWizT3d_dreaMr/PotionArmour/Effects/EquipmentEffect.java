@@ -36,6 +36,8 @@ public abstract class EquipmentEffect implements Comparable<EquipmentEffect>, Cl
 				return TrailEffect.fromConfig(ppAPI, slot, s);
 			case "effect":
 				return PotionEffect.fromConfig(slot, s);
+			case "disguise":
+				return DisguiseEffect.fromConfig(slot, s);
 			default:
 				return null;
 		}
