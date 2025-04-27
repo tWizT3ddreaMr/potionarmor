@@ -22,7 +22,7 @@ public class TrailEffect extends EquipmentEffect {
 	TrailData data = null; // modifier, optional (e.g. color, material, item, transition)
 	PlayerParticlesAPI api = null;
 	String str = "";
-	EquipmentEffect.EffectOrder order = EquipmentEffect.EffectOrder.TRAIL;
+	EquipmentEffect.EffectType type = EquipmentEffect.EffectType.TRAIL;
 
 	public TrailEffect(PlayerParticlesAPI pp) {
 		this(pp, EquipmentSlotGroup.ANY, "small_flame", "overhead", null);
@@ -41,7 +41,7 @@ public class TrailEffect extends EquipmentEffect {
 	public int compareTo(EquipmentEffect o) {
 		// in order, rank by: equipment effect type, particle, style, data obj
 		if (!(o instanceof TrailEffect)) {
-			return this.order.compareTo(o.order);
+			return this.type.compareTo(o.type);
 		}
 		TrailEffect cast = (TrailEffect) o;
 		return this.str.compareTo(cast.str);

@@ -22,12 +22,15 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import dev.esophose.playerparticles.api.PlayerParticlesAPI;
 import me.tWizT3d_dreaMr.PotionArmour.Effects.EquipmentEffect;
+import me.tWizT3d_dreaMr.PotionArmour.Effects.EquipmentEffect.EffectType;
 import net.md_5.bungee.api.ChatColor;
 
 public class EffectManager {
 	PotionArmorPlugin p;
 	private PlayerParticlesAPI ppAPI;
 	private final String LORE_DELIM = "|";
+
+	public static Map<EffectType, Boolean> isEnabled = new HashMap<>();
 
 	// loreline --> effects list
 	private static Map<String, List<EquipmentEffect>> effectsTable = new HashMap<String, List<EquipmentEffect>>();
@@ -39,27 +42,29 @@ public class EffectManager {
 
 	public EffectManager(PotionArmorPlugin _p) {
 		p = _p;
+
+		for (EffectType t : EffectType.values()) {
+			isEnabled.put(t, true);
+		}
+		isEnabled.put(EffectType.BASE, false); // base type abstract, cannot enable
+
 		if (Bukkit.getPluginManager().isPluginEnabled("PlayerParticles")) {
 			ppAPI = PlayerParticlesAPI.getInstance();
 		} else {
 			p.logger.log(Level.SEVERE, "PlayerParticles is not loaded, trail support will not be active.");
-			// TODO: fix crash calling null api
+			isEnabled.put(EffectType.TRAIL, false);
 		}
-	}
 
-	public EffectManager(PotionArmorPlugin _p, PlayerParticlesAPI _ppAPI) {
-		p = _p;
-		ppAPI = _ppAPI;
-	}
-
-	public void loadEffects(List<FileConfiguration> list) {
-		for (FileConfiguration c : list) {
-			loadEffects(c);
+		if (Bukkit.getPluginManager().isPluginEnabled("libsdisguises")) {
+			ppAPI = PlayerParticlesAPI.getInstance();
+		} else {
+			p.logger.log(Level.SEVERE, "libsdisguises is not loaded, disguise support will not be active.");
+			isEnabled.put(EffectType.DISGUISE, false);
 		}
 	}
 
 	public int loadEffects(FileConfiguration cfg) {
-		Map<String, List<EquipmentEffect>> loaded = EquipmentEffect.fromConfig(cfg, ppAPI, p.logger);
+		Map<String, List<EquipmentEffect>> loaded = EquipmentEffect.effectsFromConfig(cfg, ppAPI, p.logger);
 		effectsTable.putAll(loaded);
 		return loaded.size();
 	}
@@ -144,6 +149,11 @@ public class EffectManager {
 					if (!eff.slot.test(slot)) { // could probably move to outer loop
 						continue;
 					}
+
+					if (!isEnabled.get(EquipmentEffect.getType(eff))) {
+						continue;
+					}
+
 					// bukkit methods must be run on main thread
 					Callable<Void> mainTask = () -> {
 						eff.applyTo(_p);

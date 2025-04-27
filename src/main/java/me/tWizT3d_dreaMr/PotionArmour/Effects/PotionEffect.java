@@ -14,7 +14,7 @@ public class PotionEffect extends EquipmentEffect {
 	org.bukkit.potion.PotionEffect effect;
 	int level = 0;
 	String str = "";
-	EquipmentEffect.EffectOrder order = EffectOrder.POTION;
+	EquipmentEffect.EffectType type = EffectType.POTION;
 
 	public PotionEffect() {
 		this(null, null, 0);
@@ -31,7 +31,7 @@ public class PotionEffect extends EquipmentEffect {
 	public int compareTo(EquipmentEffect o) {
 		// in order, rank by: equipment effect type, potion effect type, level
 		if (!(o instanceof PotionEffect)) {
-			return this.order.compareTo(o.order);
+			return this.type.compareTo(o.type);
 		}
 		PotionEffect cast = (PotionEffect) o;
 		int strcmp = this.effect.getType().toString().compareTo(cast.effect.getType().toString());

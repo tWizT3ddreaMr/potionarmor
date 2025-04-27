@@ -1,79 +1,67 @@
 package me.tWizT3d_dreaMr.PotionArmour.Effects;
 
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EquipmentSlotGroup;
-import org.bukkit.potion.PotionEffectType;
-
-import me.libraryaddict.disguises.disguisetypes.Disguise;
+import me.libraryaddict.disguise.DisguiseAPI;
+import me.libraryaddict.disguise.disguisetypes.Disguise;
+import me.libraryaddict.disguise.utilities.parser.DisguiseParser;
+import me.tWizT3d_dreaMr.PotionArmour.PotionArmorPlugin;
 
 public class DisguiseEffect extends EquipmentEffect {
 
-	public static final int MAX_DURATION = 2147000;
-
 	Disguise disguise;
-	int level = 0;
-	String str = "";
-	EquipmentEffect.EffectOrder order = EffectOrder.POTION;
+	EquipmentSlotGroup slot;
+	EquipmentEffect.EffectType type = EquipmentEffect.EffectType.DISGUISE;
+
+	public final static String DEFAULT_DISGUISE_STRING = PotionArmorPlugin.plugin.config.getString(
+			"Defaults.disguise", "cow");
 
 	public DisguiseEffect() {
-		this(null, null, 0);
+		this(null, DEFAULT_DISGUISE_STRING);
 	}
 
-	public DisguiseEffect(EquipmentSlotGroup slot, PotionEffectType eff, int _level) {
+	public DisguiseEffect(EquipmentSlotGroup slot, String disguiseDesc) {
 		this.slot = slot;
-		effect = eff.createEffect(MAX_DURATION, _level);
-		level = _level;
-		str = "CE " + eff.toString();
+
+		try {
+			disguise = DisguiseParser.parseDisguise(disguiseDesc);
+		} catch (Throwable e) {
+			PotionArmorPlugin.plugin.logger.severe("Error creating disguise: "
+					+ e.toString() + " " + e.getMessage()
+					+ "\n with parameter: " + disguiseDesc);
+		}
+
 	}
 
 	@Override
 	public int compareTo(EquipmentEffect o) {
-		// in order, rank by: equipment effect type, potion effect type, level
-		if (!(o instanceof PotionEffect)) {
-			return this.order.compareTo(o.order);
+		if (!(o instanceof DisguiseEffect)) {
+			return this.type.compareTo(o.type);
 		}
-		PotionEffect cast = (PotionEffect) o;
-		int strcmp = this.effect.getType().toString().compareTo(cast.effect.getType().toString());
-		if (strcmp != 0) {
-			return strcmp;
-		}
-		return Integer.compare(this.level, cast.level);
+		DisguiseEffect cast = (DisguiseEffect) o;
+		return this.disguise.toString().compareTo(cast.toString());
 	}
 
 	@Override
 	public boolean applyTo(LivingEntity p) {
-		return p.addPotionEffect(effect);
+		DisguiseAPI.disguiseEntity((Entity) p, disguise);
+		return true;
 	}
 
 	@Override
 	public String toString() {
-		return this.str;
+		return this.disguise.getType().toReadable();
 	}
 
 	public static DisguiseEffect fromConfig(EquipmentSlotGroup slot, ConfigurationSection s) {
-		NamespacedKey key = NamespacedKey.fromString(s.getString("effect"));
-		return new PotionEffect(slot, Registry.EFFECT.get(key), s.getInt("level", 0));
+		return new DisguiseEffect(slot, s.getString("entity", DEFAULT_DISGUISE_STRING));
 	}
 
 	@Override
 	public boolean removeFrom(LivingEntity p) {
-		// org.bukkit.potion.PotionEffect active =
-		// p.getPotionEffect(this.effect.getType());
-		// leave stronger or longer effects alone
-
-		// TODO: fix behavior that drinking stronger potion will leave persistent long
-		// duration potion effect
-		
-		// if (compareEffectsIgnoreDuration(active, this.effect)) {
-		// p.removePotionEffect(this.effect.getType());
-		// }
-
-		// TODO: remove only specific potion effect, rather than all effects of same
-		// class
-		p.removePotionEffect(this.effect.getType());
+		DisguiseAPI.undisguiseToAll((Entity) p);
 		return true;
 	}
 

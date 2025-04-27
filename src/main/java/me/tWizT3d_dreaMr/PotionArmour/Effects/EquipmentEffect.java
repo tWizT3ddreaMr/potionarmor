@@ -16,7 +16,7 @@ import dev.esophose.playerparticles.api.PlayerParticlesAPI;
 
 public abstract class EquipmentEffect implements Comparable<EquipmentEffect>, Cloneable {
 
-	EquipmentEffect.EffectOrder order = EffectOrder.BASE;
+	EquipmentEffect.EffectType type = EffectType.BASE;
 
 	public EquipmentSlotGroup slot = EquipmentSlotGroup.ANY;
 
@@ -54,34 +54,52 @@ public abstract class EquipmentEffect implements Comparable<EquipmentEffect>, Cl
 			}
 			ConfigurationSection effectSection = ((ConfigurationSection) effectsMap.get(effectName));
 			if (effectSection.getBoolean("enable")) {
-				EquipmentEffect e = EquipmentEffect.parseEffect(effectSection, slot, ppAPI);
-				if (e == null) {
-					logger.log(Level.SEVERE, "Malformed effect in config: " + effectName);
-					continue;
-				}
-				effects.add(e);
+				continue;
 			}
+			EquipmentEffect e = EquipmentEffect.parseEffect(effectSection, slot, ppAPI);
+			if (e == null) {
+				logger.log(Level.SEVERE, "Malformed effect in config: " + effectName);
+				continue;
+			}
+			effects.add(e);
 		}
 		return effects;
 	}
 
 	// populate effectTable from config file
-	public static Map<String, List<EquipmentEffect>> fromConfig(FileConfiguration file,
+	public static Map<String, List<EquipmentEffect>> effectsFromConfig(FileConfiguration file,
 			PlayerParticlesAPI ppAPI, Logger logger) {
 		Map<String, List<EquipmentEffect>> effectsTable = new HashMap<String, List<EquipmentEffect>>();
-		Map<String, Object> entries = file.getConfigurationSection("Effects").getValues(false);
+		Map<String, Object> entries = file.getConfigurationSection("Effects").getValues(false); // boolean deep
 		for (String item_id : entries.keySet()) {
 			ConfigurationSection entry = ((ConfigurationSection) entries.get(item_id));
 			String loreline = entry.getString("loreline");
 			List<EquipmentEffect> effects = EquipmentEffect.parseEffectList(entry, ppAPI, logger);
-			effectsTable.put(loreline, effects);
+			if (effectsTable.containsKey(loreline)) {
+				effectsTable.get(loreline).addAll(effects);
+			} else {
+				effectsTable.put(loreline, effects);
+			}
 		}
 		return effectsTable;
 	}
 
-	public enum EffectOrder { // used for sorting subclasses
+	public static EffectType getType(EquipmentEffect e) {
+		if (e instanceof PotionEffect) {
+			return EffectType.POTION;
+		} else if (e instanceof TrailEffect) {
+			return EffectType.TRAIL;
+		} else if (e instanceof DisguiseEffect) {
+			return EffectType.DISGUISE;
+		} else {
+			return EffectType.BASE;
+		}
+	}
+
+	public static enum EffectType { // used for sorting subclasses
 		BASE,
 		POTION,
-		TRAIL
+		TRAIL,
+		DISGUISE
 	}
 }

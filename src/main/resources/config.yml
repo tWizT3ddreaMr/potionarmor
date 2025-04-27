@@ -1,6 +1,21 @@
 # PotionArmor Plugin Configuration
+# ---
+# Potion Effects
+# should support all existing potion effects
+# regenerating the default config will give you a list of options in the comments
+# ---
+# Disguise Effects:
+# "entity:" is a string of parameters parsed as if passed to "/disguise <entity>"
+# more info at https://www.spigotmc.org/wiki/lib-s-disguises-using-the-commands/
+# or by using /disguisehelp <disguisetype>
+#
+# the "libsdisguises.seethrough" permission node is useful for staffers
+# consider aliasing a command to toggle. will need to relog for the perm to take effect
+# ---
+# Trail Effects:
 # see effects at https://github.com/Rosewood-Development/PlayerParticles/blob/master/src/main/java/dev/esophose/playerparticles/particles/ParticleEffect.java
 # see styles at https://github.com/Rosewood-Development/PlayerParticles/blob/master/src/main/java/dev/esophose/playerparticles/styles/DefaultStyles.java
+# ---
 
 meta:
   language_loc: language.yml
@@ -14,6 +29,9 @@ meta:
   unit: SECONDS # timeout time unit
 
 SupportedEffects: ""
+
+Defaults:
+  disguise: cow
 
 Effects:
   item1:
@@ -89,3 +107,13 @@ Effects:
       type: effect
       effect: minecraft:regeneration
       level: 1
+  item3:
+    loreline: "my third awesome lore"
+    slot: hand
+    effect1:
+      enable: false
+      type: disguise
+      entity: creeper setIgnited true
+      # entity is a string of parameters parsed as if passed to "/disguise <entity>"
+      # more info at https://www.spigotmc.org/wiki/lib-s-disguises-using-the-commands/
+      # or by using /disguisehelp <disguisetype>
