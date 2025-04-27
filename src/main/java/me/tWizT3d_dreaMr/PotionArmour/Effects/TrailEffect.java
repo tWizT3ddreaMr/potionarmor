@@ -24,17 +24,17 @@ public class TrailEffect extends EquipmentEffect {
 	String str = "";
 	EquipmentEffect.EffectType type = EquipmentEffect.EffectType.TRAIL;
 
-	public TrailEffect(PlayerParticlesAPI pp) {
-		this(pp, EquipmentSlotGroup.ANY, "small_flame", "overhead", null);
+	public TrailEffect() {
+		this(EquipmentSlotGroup.ANY, "small_flame", "overhead", null);
 	}
 
-	public TrailEffect(PlayerParticlesAPI pp, EquipmentSlotGroup slot, String effect, String style, ConfigurationSection data) {
-		api = pp;
-		this.slot = slot;
-		this.effect = ParticleEffect.fromName(effect);
-		this.style = ParticleStyle.fromName(style);
-		this.data = TrailData.fromConfig(data);
-		this.str = "TrailEffect: {" + effect + " " + style + " " + this.data.toString() + "}";
+	public TrailEffect(EquipmentSlotGroup _slot, String _effect, String _style, ConfigurationSection _data) {
+		api = PlayerParticlesAPI.getInstance();
+		this.slot = _slot;
+		this.effect = ParticleEffect.fromName(_effect);
+		this.style = ParticleStyle.fromName(_style);
+		this.data = TrailData.fromConfig(_data);
+		this.str = "TrailEffect: {" + _effect + " " + _style + " " + this.data.toString() + "}";
 	}
 
 	@Override
@@ -54,29 +54,31 @@ public class TrailEffect extends EquipmentEffect {
 		}
 		ParticlePair applied = null;
 
+		Player _p = (Player) p;
+
 		switch (this.data.type) {
 			case COLOR_TRANSITION:
 				applied = api.addActivePlayerParticle(
-						(Player) p, this.effect, this.style, (ColorTransition) this.data.dataObject);
+						_p, this.effect, this.style, (ColorTransition) this.data.dataObject);
 				break;
 			case NOTE_COLOR:
 				applied = api.addActivePlayerParticle(
-						(Player) p, this.effect, this.style, (NoteColor) this.data.dataObject);
+						_p, this.effect, this.style, (NoteColor) this.data.dataObject);
 				break;
 			case ORDINARY_COLOR:
 				applied = api.addActivePlayerParticle(
-						(Player) p, this.effect, this.style, (OrdinaryColor) this.data.dataObject);
+						_p, this.effect, this.style, (OrdinaryColor) this.data.dataObject);
 				break;
 			case VIBRATION:
 				applied = api.addActivePlayerParticle(
-						(Player) p, this.effect, this.style, (Vibration) this.data.dataObject);
+						_p, this.effect, this.style, (Vibration) this.data.dataObject);
 				break;
 			case MATERIAL:
 				applied = api.addActivePlayerParticle(
-						(Player) p, this.effect, this.style, (Material) this.data.dataObject);
+						_p, this.effect, this.style, (Material) this.data.dataObject);
 				break;
 			default: // no data
-				applied = api.addActivePlayerParticle((Player) p, this.effect, this.style);
+				applied = api.addActivePlayerParticle(_p, this.effect, this.style);
 		}
 		return applied != null;
 	}
@@ -93,12 +95,11 @@ public class TrailEffect extends EquipmentEffect {
 
 	@Override
 	public String toString() {
-		return this.str;
+		return "TrailEffect: {" + this.effect.toString() + " " + this.style.toString() + " " + this.data.toString() + "}";
 	}
 
-	public static TrailEffect fromConfig(PlayerParticlesAPI pp, EquipmentSlotGroup slot,
-			ConfigurationSection s) {
-		return new TrailEffect(pp, slot,
+	public static TrailEffect fromConfig(EquipmentSlotGroup slot, ConfigurationSection s) {
+		return new TrailEffect(slot,
 				s.getString("effect"),
 				s.getString("style"),
 				s.getConfigurationSection("data"));

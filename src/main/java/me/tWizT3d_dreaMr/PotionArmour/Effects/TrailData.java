@@ -1,5 +1,6 @@
 package me.tWizT3d_dreaMr.PotionArmour.Effects;
 
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.configuration.ConfigurationSection;
@@ -16,7 +17,7 @@ public class TrailData {
 	String str;
 
 	public TrailData() {
-		this(null, null);
+		this(DataType.EMPTY, null);
 	}
 
 	public TrailData(DataType _type, Object _dataObject) {
@@ -30,7 +31,7 @@ public class TrailData {
 
 	public static TrailData fromConfig(ConfigurationSection cfg) {
 		if (cfg == null) {
-			return null;
+			return new TrailData();
 		}
 		String typeName = cfg.getString("type", "");
 		DataType type = null;
@@ -69,7 +70,7 @@ public class TrailData {
 						NamespacedKey.fromString(cfg.getString("material")));
 				break;
 			default:
-				return null;
+				return new TrailData();
 
 		}
 		return new TrailData(type, obj);
@@ -80,6 +81,9 @@ public class TrailData {
 	}
 
 	private String dataToString(Object obj) {
+		if (obj == null) {
+			return "NullData";
+		}
 		if (obj instanceof ColorTransition) {
 			return "ColorTransition: "
 					+ colorToString(((ColorTransition) obj).getStartColor())
@@ -90,10 +94,10 @@ public class TrailData {
 			return "NoteColor: " + ((NoteColor) obj).getNote();
 		} else if (obj instanceof Vibration) {
 			return "Vibration: " + ((Vibration) obj).getDuration();
-		} else if (obj instanceof String) {
-			return "Material: " + obj;
+		} else if (obj instanceof Material) {
+			return "Material: " + obj.toString();
 		} else {
-			return "Bad data: " + obj.toString();
+			return "Bad data: " + obj;
 		}
 	}
 
@@ -101,12 +105,13 @@ public class TrailData {
 		return "" + c.getRed() + "/" + c.getBlue() + "/" + c.getGreen();
 	}
 
-	public enum DataType {
+	public enum DataType { // this already exists in the playerparticles plugin actually...
 		COLOR_TRANSITION,
 		NOTE_COLOR,
 		ORDINARY_COLOR,
 		VIBRATION,
-		MATERIAL
+		MATERIAL,
+		EMPTY
 	}
 
 }

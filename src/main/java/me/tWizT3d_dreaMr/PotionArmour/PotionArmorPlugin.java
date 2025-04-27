@@ -60,8 +60,14 @@ public class PotionArmorPlugin extends org.bukkit.plugin.java.JavaPlugin {
 
         manager = new EffectManager(this);
         listener = new EventListener(manager);
-        manager.loadEffects(config);
-        // manager.loadEffects(moreEffectsConfig); // to add for 'effects/' dir
+
+        Runnable job = () -> {
+            int loaded = manager.loadEffects(config);
+            System.out.println(loaded + " effects loaded");
+            // manager.loadEffects(moreEffectsConfig); // to add for 'effects/' dir
+        };
+        Bukkit.getScheduler().runTask(this, job);
+        // load effects later so PlayerParticles has a chance to populate its lookup tables
 
         workAsync = config.getBoolean("meta.async");
         if (workAsync) {

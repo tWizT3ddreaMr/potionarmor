@@ -12,8 +12,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EquipmentSlotGroup;
 
-import dev.esophose.playerparticles.api.PlayerParticlesAPI;
-
 public abstract class EquipmentEffect implements Comparable<EquipmentEffect>, Cloneable {
 
 	EquipmentEffect.EffectType type = EffectType.BASE;
@@ -26,14 +24,13 @@ public abstract class EquipmentEffect implements Comparable<EquipmentEffect>, Cl
 
 	public abstract String toString();
 
-	public static EquipmentEffect parseEffect(ConfigurationSection s,
-			EquipmentSlotGroup slot, PlayerParticlesAPI ppAPI) {
+	public static EquipmentEffect parseEffect(ConfigurationSection s, EquipmentSlotGroup slot) {
 		if (!s.getBoolean("enable")) {
 			return null; // this check should be redundant
 		}
 		switch (s.getString("type")) {
 			case "trail":
-				return TrailEffect.fromConfig(ppAPI, slot, s);
+				return TrailEffect.fromConfig(slot, s);
 			case "effect":
 				return PotionEffect.fromConfig(slot, s);
 			case "disguise":
@@ -43,8 +40,7 @@ public abstract class EquipmentEffect implements Comparable<EquipmentEffect>, Cl
 		}
 	}
 
-	public static List<EquipmentEffect> parseEffectList(ConfigurationSection s,
-			PlayerParticlesAPI ppAPI, Logger logger) {
+	public static List<EquipmentEffect> parseEffectList(ConfigurationSection s, Logger logger) {
 		List<EquipmentEffect> effects = new ArrayList<EquipmentEffect>();
 		EquipmentSlotGroup slot = EquipmentSlotGroup.getByName(s.getString("slot").toUpperCase());
 		Map<String, Object> effectsMap = s.getValues(false); // shallow lookup of section keys
@@ -53,10 +49,10 @@ public abstract class EquipmentEffect implements Comparable<EquipmentEffect>, Cl
 				continue; // ignore non-effect list entries
 			}
 			ConfigurationSection effectSection = ((ConfigurationSection) effectsMap.get(effectName));
-			if (effectSection.getBoolean("enable")) {
+			if (!effectSection.getBoolean("enable")) {
 				continue;
 			}
-			EquipmentEffect e = EquipmentEffect.parseEffect(effectSection, slot, ppAPI);
+			EquipmentEffect e = EquipmentEffect.parseEffect(effectSection, slot);
 			if (e == null) {
 				logger.log(Level.SEVERE, "Malformed effect in config: " + effectName);
 				continue;
@@ -67,14 +63,13 @@ public abstract class EquipmentEffect implements Comparable<EquipmentEffect>, Cl
 	}
 
 	// populate effectTable from config file
-	public static Map<String, List<EquipmentEffect>> effectsFromConfig(FileConfiguration file,
-			PlayerParticlesAPI ppAPI, Logger logger) {
+	public static Map<String, List<EquipmentEffect>> effectsFromConfig(FileConfiguration file, Logger logger) {
 		Map<String, List<EquipmentEffect>> effectsTable = new HashMap<String, List<EquipmentEffect>>();
 		Map<String, Object> entries = file.getConfigurationSection("Effects").getValues(false); // boolean deep
 		for (String item_id : entries.keySet()) {
 			ConfigurationSection entry = ((ConfigurationSection) entries.get(item_id));
 			String loreline = entry.getString("loreline");
-			List<EquipmentEffect> effects = EquipmentEffect.parseEffectList(entry, ppAPI, logger);
+			List<EquipmentEffect> effects = EquipmentEffect.parseEffectList(entry, logger);
 			if (effectsTable.containsKey(loreline)) {
 				effectsTable.get(loreline).addAll(effects);
 			} else {

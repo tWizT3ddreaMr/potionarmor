@@ -27,7 +27,7 @@ import net.md_5.bungee.api.ChatColor;
 
 public class EffectManager {
 	PotionArmorPlugin p;
-	private PlayerParticlesAPI ppAPI;
+	// private PlayerParticlesAPI ppAPI;
 	private final String LORE_DELIM = "|";
 
 	public static Map<EffectType, Boolean> isEnabled = new HashMap<>();
@@ -48,23 +48,21 @@ public class EffectManager {
 		}
 		isEnabled.put(EffectType.BASE, false); // base type abstract, cannot enable
 
-		if (Bukkit.getPluginManager().isPluginEnabled("PlayerParticles")) {
-			ppAPI = PlayerParticlesAPI.getInstance();
-		} else {
+		if (!Bukkit.getPluginManager().isPluginEnabled("PlayerParticles")) {
+			// ppAPI = PlayerParticlesAPI.getInstance();
+			// } else {
 			p.logger.log(Level.SEVERE, "PlayerParticles is not loaded, trail support will not be active.");
 			isEnabled.put(EffectType.TRAIL, false);
 		}
 
-		if (Bukkit.getPluginManager().isPluginEnabled("libsdisguises")) {
-			ppAPI = PlayerParticlesAPI.getInstance();
-		} else {
+		if (!Bukkit.getPluginManager().isPluginEnabled("libsdisguises")) {
 			p.logger.log(Level.SEVERE, "libsdisguises is not loaded, disguise support will not be active.");
 			isEnabled.put(EffectType.DISGUISE, false);
 		}
 	}
 
 	public int loadEffects(FileConfiguration cfg) {
-		Map<String, List<EquipmentEffect>> loaded = EquipmentEffect.effectsFromConfig(cfg, ppAPI, p.logger);
+		Map<String, List<EquipmentEffect>> loaded = EquipmentEffect.effectsFromConfig(cfg, p.logger);
 		effectsTable.putAll(loaded);
 		return loaded.size();
 	}
@@ -88,8 +86,8 @@ public class EffectManager {
 
 			// bukkit methods must be run on main thread
 			Callable<Void> forMain = () -> {
-				_p.clearActivePotionEffects();
-				ppAPI.resetActivePlayerParticles(_p);
+				_p.clearActivePotionEffects(); // TODO: fix - clears other (drunk) potion effects
+				PlayerParticlesAPI.getInstance().resetActivePlayerParticles(_p);
 				return null;
 			};
 			Future<Void> _task = Bukkit.getServer().getScheduler().callSyncMethod(
@@ -151,6 +149,7 @@ public class EffectManager {
 					}
 
 					if (!isEnabled.get(EquipmentEffect.getType(eff))) {
+						System.out.println("Type not enabled: " + eff.toString());
 						continue;
 					}
 
@@ -196,7 +195,7 @@ public class EffectManager {
 
 	private void removeEquipment(Player _p, ItemStack i, boolean apply) {
 		List<String> lore = getLore(i);
-		if (lore == null || p == null)
+		if (lore == null || _p == null)
 			return;
 		String key = loreKey(lore);
 		if (!loreCache.containsKey(key))
@@ -206,15 +205,12 @@ public class EffectManager {
 
 	public void replaceEquipment(Player _p, ItemStack _new, ItemStack _old, EquipmentSlot slot) {
 		// TODO: figure out if bugs when new and old have overlapping effects
-		if (_new == null) {
+		if (_old != null) {
 			removeEquipment(_p, _old);
-			return;
 		}
-		if (_old == null) {
+		if (_new != null) {
 			addEquipment(_p, _new, slot);
-			return;
 		}
-		resetPlayerEffects(_p);
 	}
 
 	@SuppressWarnings("deprecation")

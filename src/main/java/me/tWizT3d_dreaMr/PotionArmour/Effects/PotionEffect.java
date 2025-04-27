@@ -64,7 +64,7 @@ public class PotionEffect extends EquipmentEffect {
 
 		// TODO: fix behavior that drinking stronger potion will leave persistent long
 		// duration potion effect
-		
+
 		// if (compareEffectsIgnoreDuration(active, this.effect)) {
 		// p.removePotionEffect(this.effect.getType());
 		// }

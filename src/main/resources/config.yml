@@ -44,7 +44,7 @@ Effects:
       style: overhead
       data:
         type: ordinary_color
-        r: 100
+        r: 0
         g: 100
         b: 100
         # must be 0-255
@@ -62,11 +62,11 @@ Effects:
       style: overhead
       data:
         type: color_transition
-        r: 100
+        r: 0
         g: 100
-        b: 100
-        r2: 100
-        g2: 100
+        b: 0
+        r2: 0
+        g2: 0
         b2: 100
         # must be 0-255
         # 999,999,999 is rainbow
@@ -89,7 +89,7 @@ Effects:
       style: overhead
       data:
         type: vibration
-        duration: 100
+        duration: 40
         # arrival time in ticks
     effect6:
       enable: false
