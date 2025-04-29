@@ -1,14 +1,21 @@
 name: ${project.artifactId}
 author: tWizT3d_dreaMr,TonyJamesStark
 version: ${project.version}
-main: me.tWizT3d_dreaMr.PotionArmour.main
+main: me.tWizT3d_dreaMr.PotionArmour.PotionArmorPlugin
+softdepend: [libsdisguises, PlayerParticles]
 commands:
-   Pareset:
-      description: Reset players effects.
-      usage: pareset <player>
-   reload:
-      description: Reloads config
-      usage: reload
+  Pareset:
+    description: Reset players effects.
+    usage: pareset <player>
+  reload:
+    description: Reloads config
+    usage: reload
+  effects:
+    description: Displays supported potion effects.
+    usage: effects
+  debugDump:
+    description: Print information useful for debugging
+    usage: debugDump
 permissions:
   Potionarmor.pareset:
     default: op
@@ -16,4 +23,10 @@ permissions:
   Potionarmor.reload:
     default: op
     description: Allows reloading of the plugin config
-api-version: 1.18
+  Potionarmor.effects:
+    default: op
+    description: Allows printing of supported potion effects
+  Potionarmor.debug:
+    default: op
+    description: Permits use of debug commands
+api-version: 1.21.4

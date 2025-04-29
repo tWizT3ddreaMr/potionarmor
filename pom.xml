@@ -1,92 +1,115 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>potionarmor</groupId>
-    <artifactId>potionarmor</artifactId>
-    <version>1.0.7</version>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>potionarmor</groupId>
+  <artifactId>potionarmor</artifactId>
+  <version>2.1.0</version>
 
-    <repositories>
-      <repository>
-       <id>papermc</id>
-       <url>https://papermc.io/repo/repository/maven-public/</url>
-   </repository>
-</repositories>
+  <repositories>
+    <repository>
+      <id>papermc</id>
+      <url>https://repo.papermc.io/repository/maven-public/</url>
+    </repository>
+    <repository>
+      <id>rwd-repo</id>
+      <url>https://repo.rosewooddev.io/repository/public/</url>
+    </repository>
+    <repository>
+      <id>md_5-public</id>
+      <url>https://repo.md-5.net/content/groups/public/</url>
+    </repository>
 
-<dependencies>
+
+  </repositories>
+
+  <dependencies>
     <dependency>
       <groupId>io.papermc.paper</groupId>
       <artifactId>paper-api</artifactId>
-      <version>1.21.1-R0.1-SNAPSHOT</version>
-      <!-- 1.18.1-R0.1-SNAPSHOT< -->
+      <version>1.21.4-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
-  </dependency>
-</dependencies>
+    </dependency>
+    <dependency>
+      <groupId>dev.esophose</groupId>
+      <artifactId>playerparticles</artifactId>
+      <version>8.8</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>me.libraryaddict.disguises</groupId>
+      <artifactId>libsdisguises</artifactId>
+      <version>11.0.0</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
 
 
-<build>
+  <build>
     <finalName>${project.artifactId}-${project.version}</finalName>
     <defaultGoal>clean package</defaultGoal>
     <resources>
-        <resource>
-            <filtering>true</filtering>
-            <directory>src/main/resources</directory>
-        </resource>
+      <resource>
+        <filtering>true</filtering>
+        <directory>src/main/resources</directory>
+      </resource>
     </resources>
     <plugins>
-        <plugin>
-          <groupId>com.diffplug.spotless</groupId>
-          <artifactId>spotless-maven-plugin</artifactId>
-          <version>2.44.0.BETA4</version>
-          <executions>
-            <execution>
-                <goals>
-                  <goal>check</goal>
-              </goals>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>2.44.0.BETA4</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
           </execution>
-      </executions>
-      <configuration>
-        <!-- optional: limit format enforcement to just the files changed by this feature branch -->
-        <!-- <ratchetFrom>origin/main</ratchetFrom> -->
-        <formats>
-          <!-- you can define as many formats as you want, each is independent -->
-          <format>
-            <!-- define the files to apply to -->
-            <includes>
-              <include>.gitattributes</include>
-              <include>.gitignore</include>
-          </includes>
-          <!-- define the steps to apply to those files -->
-          <trimTrailingWhitespace/>
-          <endWithNewline/>
-          <indent>
-              <tabs>true</tabs>
-              <spacesPerTab>4</spacesPerTab>
-          </indent>
-      </format>
-  </formats>
-  <!-- define a language-specific format -->
-  <java>
-      <!-- no need to specify files, inferred automatically, but you can if you want -->
+        </executions>
+        <configuration>
+          <!-- optional: limit format enforcement to just the files changed by this feature branch -->
+          <!-- <ratchetFrom>origin/main</ratchetFrom> -->
+          <formats>
+            <!-- you can define as many formats as you want, each is independent -->
+            <format>
+              <!-- define the files to apply to -->
+              <includes>
+                <include>.gitattributes</include>
+                <include>.gitignore</include>
+              </includes>
+              <!-- define the steps to apply to those files -->
+              <trimTrailingWhitespace />
+              <endWithNewline />
+              <indent>
+                <tabs>true</tabs>
+                <spacesPerTab>4</spacesPerTab>
+              </indent>
+            </format>
+          </formats>
+          <!-- define a language-specific format -->
+          <java>
+            <!-- no need to specify files, inferred automatically, but you can if you want -->
 
-      <!-- apply a specific flavor of google-java-format and reflow long strings -->
-      <googleJavaFormat>
-        <version>1.17.0</version>
-        <style>AOSP</style>
-        <reflowLongStrings>true</reflowLongStrings>
-        <formatJavadoc>false</formatJavadoc>
-    </googleJavaFormat>
+            <!-- apply a specific flavor of google-java-format and reflow long strings -->
+            <googleJavaFormat>
+              <version>1.17.0</version>
+              <style>AOSP</style>
+              <reflowLongStrings>true</reflowLongStrings>
+              <formatJavadoc>false</formatJavadoc>
+            </googleJavaFormat>
 
-  <!-- make sure every file has the following copyright header.
-    optionally, Spotless can set copyright years by digging
-    through git history (see "license" section below) -->
-    <licenseHeader>
-        <content>/* (C)$YEAR */</content>  <!-- or <file>${project.basedir}/license-header</file> -->
-    </licenseHeader>
-</java>
-</configuration>
-</plugin>
-</plugins>
-</build>
-
+            <!-- make sure every file has the following copyright header.
+      optionally, Spotless can set copyright years by digging
+      through git history (see "license" section below) -->
+            <licenseHeader>
+              <content>/* (C)$YEAR */</content>  <!-- or
+              <file>${project.basedir}/license-header</file> -->
+            </licenseHeader>
+          </java>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 
 </project>
